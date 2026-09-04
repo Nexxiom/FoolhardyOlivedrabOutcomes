@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "f5605b75-63c6-45c8-8a16-ded43feb6aef"
+      }
+    },
+    "android": {
+      "package": "com.solar.meonix"
+    }
+  }
+}
