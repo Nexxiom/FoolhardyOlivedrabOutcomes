@@ -9,14 +9,3 @@ export interface HealthStatus {
   status: string;
 }
 
-export interface SolarHistory {
-  consommation: number[];
-  production: number[];
-  solde: number[];
-  labels: string[];
-}
-
-export interface ErrorResponse {
-  message: string;
-}
-

@@ -23,14 +23,14 @@ Application mobile Expo pour suivre en temps réel la production, la consommatio
 ## Where things live
 
 - `artifacts/solar-monitor` — application mobile Expo et tableau de bord principal.
-- `artifacts/api-server/src/routes/solar.ts` — proxy sécurisé vers l’API solaire externe.
+- `artifacts/solar-monitor/lib/solar-api.ts` — accès direct aux endpoints solaires depuis le mobile.
 - `lib/api-spec/openapi.yaml` — contrat de l’API interne et source de codegen.
 - `artifacts/solar-monitor/constants/colors.ts` — palette énergie sombre de l’application.
 
 ## Architecture decisions
 
-- La clé de l’API solaire reste dans le secret `SOLAR_API_KEY` et n’est jamais embarquée dans le client mobile.
-- L’application appelle le proxy Express interne, ce qui évite d’exposer la clé dans les requêtes du téléphone.
+- Le token API est saisi par l’utilisateur et conservé uniquement sur son téléphone.
+- L’application appelle directement api.meonix.me, sans proxy Express intermédiaire.
 - Le tableau de bord met en avant la dernière mesure et une tendance des 18 derniers points reçus.
 
 ## Product
@@ -43,7 +43,7 @@ L’interface est en français.
 
 ## Gotchas
 
-Après toute modification du contrat solaire, relancer le codegen de `@workspace/api-spec` avant de vérifier l’app mobile.
+Les données solaires sont chargées directement depuis le mobile ; l’utilisateur doit configurer son token dans Réglages.
 
 ## Pointers
 

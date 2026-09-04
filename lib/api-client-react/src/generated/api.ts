@@ -16,9 +16,7 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
-  ErrorResponse,
-  HealthStatus,
-  SolarHistory
+  HealthStatus
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -114,84 +112,6 @@ export function useHealthCheck<TData = Awaited<ReturnType<typeof healthCheck>>, 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getHealthCheckQueryOptions(options)
-
-  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
-
-  return withQueryKey(query, queryOptions.queryKey);
-}
-
-
-
-
-
-
-
-export const getGetSolarHistoryUrl = () => {
-
-
-
-
-  return `/api/solar/history`
-}
-
-/**
- * Returns the latest consumption, production, balance and time labels from the connected solar API.
- * @summary Get solar energy history
- */
-export const getSolarHistory = async ( options?: Parameters<typeof customFetch>[1]): Promise<SolarHistory> => {
-
-  return customFetch<SolarHistory>(getGetSolarHistoryUrl(),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
-
-
-export const getGetSolarHistoryQueryKey = () => {
-    return [
-    `/api/solar/history`
-    ] as const;
-    }
-
-
-export const getGetSolarHistoryQueryOptions = <TData = Awaited<ReturnType<typeof getSolarHistory>>, TError = ErrorType<ErrorResponse>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSolarHistory>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-) => {
-
-const {query: queryOptions, request: requestOptions} = options ?? {};
-
-  const queryKey =  queryOptions?.queryKey ?? getGetSolarHistoryQueryKey();
-
-
-
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSolarHistory>>> = ({ signal }) => getSolarHistory({ signal, ...requestOptions });
-
-
-
-
-
-   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSolarHistory>>, TError, TData> & { queryKey: QueryKey }
-}
-
-export type GetSolarHistoryQueryResult = NonNullable<Awaited<ReturnType<typeof getSolarHistory>>>
-export type GetSolarHistoryQueryError = ErrorType<ErrorResponse>
-
-
-/**
- * @summary Get solar energy history
- */
-
-export function useGetSolarHistory<TData = Awaited<ReturnType<typeof getSolarHistory>>, TError = ErrorType<ErrorResponse>>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSolarHistory>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
-
- ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
-
-  const queryOptions = getGetSolarHistoryQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 

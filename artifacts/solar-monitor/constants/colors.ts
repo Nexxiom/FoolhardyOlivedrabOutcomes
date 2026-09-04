@@ -49,6 +49,13 @@ const colors = {
     // Borders and input outlines
     border: '#233653',
     input: '#233653',
+    success: '#72d8c8',
+    successMuted: '#173b43',
+    coral: '#f1876c',
+    coralMuted: '#3f2c3a',
+    heroStart: '#1e3c52',
+    heroMid: '#164655',
+    heroEnd: '#18514e',
   },
 
   // Border radius (in px). Sync from the sibling web artifact's --radius

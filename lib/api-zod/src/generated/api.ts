@@ -17,15 +17,3 @@ export const HealthCheckResponse = zod.object({
 })
 
 
-/**
- * Returns the latest consumption, production, balance and time labels from the connected solar API.
- * @summary Get solar energy history
- */
-export const GetSolarHistoryResponse = zod.object({
-  "consommation": zod.array(zod.number()),
-  "production": zod.array(zod.number()),
-  "solde": zod.array(zod.number()),
-  "labels": zod.array(zod.string())
-})
-
-
