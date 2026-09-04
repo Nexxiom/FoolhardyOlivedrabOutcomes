@@ -1,4 +1,5 @@
 const API_BASE_URL = 'https://api.meonix.me/api';
+const REQUEST_TIMEOUT_MS = 45_000;
 
 export type SolarHistory = {
   consommation: number[];
@@ -18,19 +19,31 @@ export type SolarRealtime = {
 async function request<T>(path: string, apiKey: string): Promise<T> {
   const url = new URL(`${API_BASE_URL}${path}`);
   url.searchParams.set('key', apiKey.trim());
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
-  const response = await fetch(url.toString(), {
-    headers: { accept: 'application/json' },
-  });
+  try {
+    const response = await fetch(url.toString(), {
+      headers: { accept: 'application/json' },
+      signal: controller.signal,
+    });
 
-  if (!response.ok) {
-    if (response.status === 401 || response.status === 403) {
-      throw new Error('Token API invalide ou refusé.');
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        throw new Error('Token API invalide ou refusé.');
+      }
+      throw new Error(`L’API a répondu avec le statut ${response.status}.`);
     }
-    throw new Error(`L’API a répondu avec le statut ${response.status}.`);
-  }
 
-  return (await response.json()) as T;
+    return (await response.json()) as T;
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('Le démarrage de l’API prend plus de temps que prévu.');
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 function readNumber(value: unknown): number {

@@ -129,12 +129,18 @@ export default function HomeScreen() {
     queryFn: () => getSolarHistory(settings.apiKey),
     enabled: hasToken,
     refetchInterval: 300_000,
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(2_000 * 2 ** attemptIndex, 8_000),
+    staleTime: 20_000,
   });
   const realtimeQuery = useQuery({
     queryKey: ['solar-realtime', settings.apiKey],
     queryFn: () => getSolarRealtime(settings.apiKey),
     enabled: hasToken,
     refetchInterval: 30_000,
+    retry: 2,
+    retryDelay: (attemptIndex) => Math.min(2_000 * 2 ** attemptIndex, 8_000),
+    staleTime: 10_000,
   });
   const history = historyQuery.data as SolarHistory | undefined;
   const realtime = realtimeQuery.data;
@@ -186,22 +192,37 @@ export default function HomeScreen() {
     return <View style={[styles.screen, { paddingTop: insets.top }]}><SetupState colors={colors} /></View>;
   }
 
-  if ((historyQuery.isLoading && !history) || (realtimeQuery.isLoading && !latest)) {
+  if (!latest && (historyQuery.isLoading || realtimeQuery.isLoading)) {
     return (
       <View style={[styles.loadingScreen, { paddingTop: insets.top }]}>
         <ActivityIndicator size="large" color={colors.primary} />
         <Text style={styles.loadingText}>Lecture de votre production…</Text>
+        <Text style={styles.loadingHint}>La première connexion peut prendre quelques secondes.</Text>
       </View>
     );
   }
 
-  if (!latest || historyQuery.isError || realtimeQuery.isError) {
+  if (!latest) {
     const tokenError =
-      historyQuery.error instanceof Error && historyQuery.error.message.includes('Token');
+      [historyQuery.error, realtimeQuery.error].some(
+        (error) => error instanceof Error && error.message.includes('Token'),
+      );
+    const slowApi =
+      [historyQuery.error, realtimeQuery.error].some(
+        (error) =>
+          error instanceof Error &&
+          error.message.includes('plus de temps'),
+      );
     return (
       <View style={[styles.screen, { paddingTop: insets.top }]}>
         <ErrorState
-          message={tokenError ? 'Vérifiez votre token API dans Réglages.' : 'Impossible de récupérer les données de votre installation.'}
+          message={
+            tokenError
+              ? 'Vérifiez votre token API dans Réglages.'
+              : slowApi
+                ? 'Votre API met un peu plus de temps à démarrer. Réessayez dans quelques instants.'
+                : 'Impossible de récupérer les données de votre installation.'
+          }
           onRetry={refresh}
           colors={colors}
         />
@@ -210,7 +231,7 @@ export default function HomeScreen() {
   }
 
   const isExporting = latest.solde < 0;
-  const live = realtime?.online ?? true;
+  const live = realtime?.online ?? false;
 
   return (
     <View style={[styles.screen, { paddingTop: insets.top }]}>
@@ -298,6 +319,7 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: 20, paddingTop: 20 },
   loadingScreen: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 14, backgroundColor: '#0b1324' },
   loadingText: { color: '#8fa3bd', fontSize: 14, fontFamily: 'Inter_500Medium' },
+  loadingHint: { color: '#647993', fontSize: 12, fontFamily: 'Inter_400Regular', textAlign: 'center', paddingHorizontal: 28 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 22 },
   eyebrow: { fontFamily: 'Inter_700Bold', fontSize: 11, letterSpacing: 1.7, marginBottom: 7 },
   title: { fontFamily: 'Inter_700Bold', fontSize: 24, letterSpacing: -0.7, maxWidth: 290 },
