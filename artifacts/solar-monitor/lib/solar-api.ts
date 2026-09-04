@@ -1,3 +1,5 @@
+import { Platform } from 'react-native';
+
 const API_BASE_URL = 'https://api.meonix.me/api';
 const REQUEST_TIMEOUT_MS = 45_000;
 
@@ -24,7 +26,6 @@ async function request<T>(path: string, apiKey: string): Promise<T> {
 
   try {
     const response = await fetch(url.toString(), {
-      headers: { accept: 'application/json' },
       signal: controller.signal,
     });
 
@@ -39,6 +40,15 @@ async function request<T>(path: string, apiKey: string): Promise<T> {
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') {
       throw new Error('Le démarrage de l’API prend plus de temps que prévu.');
+    }
+    if (
+      Platform.OS === 'web' &&
+      error instanceof TypeError &&
+      /network|failed to fetch|load failed/i.test(error.message)
+    ) {
+      throw new Error(
+        'Le navigateur bloque cet appel direct. Activez CORS sur api.meonix.me pour utiliser la version web.',
+      );
     }
     throw error;
   } finally {

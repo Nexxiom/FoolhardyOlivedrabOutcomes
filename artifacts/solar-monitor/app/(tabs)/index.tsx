@@ -213,6 +213,12 @@ export default function HomeScreen() {
           error instanceof Error &&
           error.message.includes('plus de temps'),
       );
+    const browserBlocked =
+      [historyQuery.error, realtimeQuery.error].some(
+        (error) =>
+          error instanceof Error &&
+          error.message.includes('bloque cet appel'),
+      );
     return (
       <View style={[styles.screen, { paddingTop: insets.top }]}>
         <ErrorState
@@ -221,6 +227,8 @@ export default function HomeScreen() {
               ? 'Vérifiez votre token API dans Réglages.'
               : slowApi
                 ? 'Votre API met un peu plus de temps à démarrer. Réessayez dans quelques instants.'
+                : browserBlocked
+                  ? 'La version web est bloquée par la protection CORS de votre API. Autorisez ce site dans api.meonix.me.'
                 : 'Impossible de récupérer les données de votre installation.'
           }
           onRetry={refresh}
