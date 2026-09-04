@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: solar
+    description: Solar energy monitoring operations
 paths:
   /healthz:
     get:
@@ -24,6 +26,25 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /solar/history:
+    get:
+      operationId: getSolarHistory
+      tags: [solar]
+      summary: Get solar energy history
+      description: Returns the latest consumption, production, balance and time labels from the connected solar API.
+      responses:
+        "200":
+          description: Solar history
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SolarHistory"
+        "502":
+          description: Upstream solar API unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +54,35 @@ components:
           type: string
       required:
         - status
+    SolarHistory:
+      type: object
+      properties:
+        consommation:
+          type: array
+          items:
+            type: number
+        production:
+          type: array
+          items:
+            type: number
+        solde:
+          type: array
+          items:
+            type: number
+        labels:
+          type: array
+          items:
+            type: string
+      required:
+        - consommation
+        - production
+        - solde
+        - labels
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
 

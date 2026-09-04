@@ -1,6 +1,6 @@
-# [Project name]
+# Solar Monitor
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Application mobile Expo pour suivre en temps réel la production, la consommation et le solde d’une installation solaire.
 
 ## Run & Operate
 
@@ -22,23 +22,28 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/solar-monitor` — application mobile Expo et tableau de bord principal.
+- `artifacts/api-server/src/routes/solar.ts` — proxy sécurisé vers l’API solaire externe.
+- `lib/api-spec/openapi.yaml` — contrat de l’API interne et source de codegen.
+- `artifacts/solar-monitor/constants/colors.ts` — palette énergie sombre de l’application.
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- La clé de l’API solaire reste dans le secret `SOLAR_API_KEY` et n’est jamais embarquée dans le client mobile.
+- L’application appelle le proxy Express interne, ce qui évite d’exposer la clé dans les requêtes du téléphone.
+- Le tableau de bord met en avant la dernière mesure et une tendance des 18 derniers points reçus.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Solar Monitor affiche la puissance solaire en direct, la consommation, l’injection ou l’import réseau, une tendance de production et quelques indicateurs de qualité des données. Les données peuvent être actualisées par geste de tirage ou via le bouton d’actualisation.
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+L’interface est en français.
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+Après toute modification du contrat solaire, relancer le codegen de `@workspace/api-spec` avant de vérifier l’app mobile.
 
 ## Pointers
 
