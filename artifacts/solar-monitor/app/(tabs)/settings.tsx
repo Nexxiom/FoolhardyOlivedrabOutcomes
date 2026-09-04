@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { KeyboardAwareScrollViewCompat } from '@/components/KeyboardAwareScrollViewCompat';
 import { useSolarSettings } from '@/context/SolarSettingsContext';
+import { getSolarRealtime } from '@/lib/solar-api';
 import { useColors } from '@/hooks/useColors';
 
 export default function SettingsScreen() {
@@ -22,17 +23,38 @@ export default function SettingsScreen() {
   const [apiKey, setApiKey] = useState('');
   const [saved, setSaved] = useState(false);
   const [notice, setNotice] = useState('');
+  const [checking, setChecking] = useState(false);
 
   useEffect(() => {
     if (isReady) setApiKey(settings.apiKey);
   }, [isReady, settings.apiKey]);
 
   const saveToken = async () => {
-    await updateSettings({ apiKey: apiKey.trim() });
-    void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    setSaved(true);
-    setNotice('');
-    setTimeout(() => setSaved(false), 2200);
+    const nextApiKey = apiKey.trim();
+    if (!nextApiKey) {
+      setNotice('Collez votre token API avant de l’enregistrer.');
+      return;
+    }
+
+    setChecking(true);
+    setSaved(false);
+    setNotice('Vérification de la connexion… cela peut prendre quelques secondes.');
+    try {
+      await getSolarRealtime(nextApiKey);
+      await updateSettings({ apiKey: nextApiKey });
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setSaved(true);
+      setNotice('Connexion vérifiée. Les données vont apparaître dans Accueil.');
+      setTimeout(() => setSaved(false), 2500);
+    } catch (error) {
+      setNotice(
+        error instanceof Error
+          ? error.message
+          : 'Impossible de vérifier ce token API.',
+      );
+    } finally {
+      setChecking(false);
+    }
   };
 
   const toggleNotifications = async (value: boolean) => {
@@ -106,9 +128,9 @@ export default function SettingsScreen() {
             style={[styles.tokenInput, { color: colors.foreground, borderColor: colors.border, backgroundColor: colors.muted }]}
             testID="api-key-input"
           />
-          <Pressable onPress={saveToken} style={({ pressed }) => [styles.saveButton, { backgroundColor: colors.primary }, pressed && styles.pressed]} testID="save-api-key">
-            <Feather name={saved ? 'check' : 'save'} size={16} color={colors.primaryForeground} />
-            <Text style={[styles.saveText, { color: colors.primaryForeground }]}>{saved ? 'Token enregistré' : 'Enregistrer le token'}</Text>
+          <Pressable onPress={saveToken} disabled={checking} style={({ pressed }) => [styles.saveButton, { backgroundColor: colors.primary }, checking && styles.disabled, pressed && styles.pressed]} testID="save-api-key">
+            {checking ? <ActivityIndicator size="small" color={colors.primaryForeground} /> : <Feather name={saved ? 'check' : 'save'} size={16} color={colors.primaryForeground} />}
+            <Text style={[styles.saveText, { color: colors.primaryForeground }]}>{checking ? 'Vérification en cours…' : saved ? 'Token enregistré' : 'Vérifier et enregistrer'}</Text>
           </Pressable>
         </View>
 
@@ -168,5 +190,6 @@ const styles = StyleSheet.create({
   notice: { fontFamily: 'Inter_500Medium', fontSize: 12, lineHeight: 18, marginTop: 14 },
   directCard: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 15, borderRadius: 17, borderWidth: 1 },
   directText: { flex: 1, fontFamily: 'Inter_400Regular', fontSize: 12, lineHeight: 18 },
+  disabled: { opacity: 0.6 },
   pressed: { opacity: 0.74, transform: [{ scale: 0.98 }] },
 });

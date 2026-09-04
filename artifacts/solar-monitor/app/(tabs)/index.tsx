@@ -85,9 +85,9 @@ function SetupState({ colors }: { colors: ReturnType<typeof useColors> }) {
       <View style={[styles.stateIcon, { backgroundColor: colors.muted }]}>
         <Feather name="key" size={24} color={colors.primary} />
       </View>
-      <Text style={styles.stateTitle}>Connectez votre installation</Text>
+      <Text style={styles.stateTitle}>Token API requis</Text>
       <Text style={styles.stateText}>
-        Ajoutez votre token API dans Réglages pour afficher vos données solaires.
+        Aucun token n’est encore enregistré sur ce téléphone. Collez votre clé dans Réglages pour afficher vos données solaires.
       </Text>
       <Pressable
         onPress={() => {
